@@ -1,0 +1,36 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Payments.Domain;
+public class Payment
+{
+    public Guid Id { get; private set; }
+    public Guid PayerId { get; private set; }
+    public Guid PayeeId { get; private set; }
+    public decimal Amount { get; private set; }
+    public PaymentStatus Status { get; private set; }
+    public DateTime CreatedAt { get; private set; }
+
+    private Payment() { }
+    public static Payment Create(Guid payerId, Guid payeeId, decimal amount)
+    {
+        if (amount <= 0)
+            throw new DomainException("The amount must be greater than zero.");
+
+        if (payerId == payeeId)
+            throw new DomainException("Payer and payee cannot be the same account.");
+
+        return new Payment
+        {
+            Id = Guid.NewGuid(),
+            PayerId = payerId,
+            PayeeId = payeeId,
+            Amount = amount,
+            Status = PaymentStatus.Pending,
+            CreatedAt = DateTime.UtcNow
+        };
+    }
+}
