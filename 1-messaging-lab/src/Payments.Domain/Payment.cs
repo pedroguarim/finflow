@@ -13,6 +13,7 @@ public class Payment
     public decimal Amount { get; private set; }
     public PaymentStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    public string? RejectionReason { get; private set; }
 
     private Payment() { }
     public static Payment Create(Guid payerId, Guid payeeId, decimal amount)
@@ -32,5 +33,18 @@ public class Payment
             Status = PaymentStatus.Pending,
             CreatedAt = DateTime.UtcNow
         };
+    }
+    public void Approve()
+    {
+        if (Status != PaymentStatus.Pending)
+            throw new DomainException("Only pending payments can be approved.");
+        Status = PaymentStatus.Approved;
+    }
+    public void Reject(string reason)
+    {
+        if (Status != PaymentStatus.Pending)
+            throw new DomainException("Only pending payments can be rejected.");
+        Status = PaymentStatus.Rejected;
+        RejectionReason = reason;
     }
 }

@@ -49,4 +49,51 @@ public class PaymentTests
         act.Should().Throw<DomainException>()
            .WithMessage("*same*");
     }
+    [Fact]
+    public void Approve_ShouldChangeStatusToApproved()
+    {
+        // Arrange
+        var payment = Payment.Create(Guid.NewGuid(), Guid.NewGuid(), 100m);
+        // Act
+        payment.Approve();
+        // Assert
+        payment.Status.Should().Be(PaymentStatus.Approved);
+    }
+
+    [Fact]
+    public void Approve_WhenAlreadyApproved_ShouldThrowDomainException()
+    {
+        //Arrange
+        var payment = Payment.Create(Guid.NewGuid(), Guid.NewGuid(), 100m);
+        payment.Approve(); // First approval
+        // Act
+        var act = () => payment.Approve(); // Second approval attempt
+        // Assert
+        act.Should().Throw<DomainException>()
+           .WithMessage("*pending*");
+    }
+    [Fact]
+    public void Reject_ShouldChangeStatusToRejected()
+    {
+        // Arrange
+        var payment = Payment.Create(Guid.NewGuid(), Guid.NewGuid(), 100m);
+        // Act
+        payment.Reject("Suspected fraud");
+        // Assert
+        payment.Status.Should().Be(PaymentStatus.Rejected);
+        payment.RejectionReason.Should().Be("Suspected fraud");
+    }
+    [Fact]
+    public void Reject_WhenAlreadyApproved_ShouldThrowDomainException()
+    {
+        // Arrange
+        var payment = Payment.Create(Guid.NewGuid(), Guid.NewGuid(), 100m);
+        payment.Approve(); // First approval
+        // Act
+        var act = () => payment.Reject("Suspected fraud"); // Second approval attempt
+        // Assert
+        act.Should().Throw<DomainException>()
+           .WithMessage("*pending*");
+        payment.RejectionReason.Should().Be("Suspected fraud");
+    }
 }
